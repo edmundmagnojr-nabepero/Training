@@ -37,4 +37,4 @@ public function contact(){
 @endif
 ```
 ### Resources
-[Blade Templates]([https://laravel.com/docs/5.2/views](https://laravel.com/docs/5.2/blade))
+[Blade Templates](https://laravel.com/docs/5.2/blade)
