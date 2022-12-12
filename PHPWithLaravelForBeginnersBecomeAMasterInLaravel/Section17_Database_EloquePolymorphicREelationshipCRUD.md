@@ -1,4 +1,4 @@
-# Section 16: Database - Eloquent Polymorphic Relationship CRUD
+# Section 17: Database - Eloquent Polymorphic Relationship CRUD
 
 ### New - Create a new laravel installation with Database setup
 ```bash
