@@ -4,13 +4,13 @@
 
 ### Database migrations
 ```bash
-#make Address model
+#make Post model
 $ php artisan make:model Post -m
 
 #migrate migrations
 $ php artisan migrate
 ```
-+ create Addresses table
++ create Post table
 ```php
 public function up()
     {
@@ -31,7 +31,7 @@ public function posts(){
         return $this->hasMany('App\Models\Post');
     }
 ```
-+ address model
++ post model
 ```php
 protected $fillable = [
         'title',
@@ -40,45 +40,52 @@ protected $fillable = [
 ```
 
 ### Inserting data
++ insert new user using tinker
+```bash
+$ php artisan tinker
+> App\Models\User::create(['name'=>'Edwin Diaz','email'=>'edwin@codingfaculty.com','password'=>bcrypt("123")]);
+> exit
+```
 + create insert route
 ```php
-Route::get('/insert', function(){
-  $user = User::findOrFail(1);
-  
-  $address = new Address(['name'=>'4435 Paulina av NY NY 11218']);
-  
-  $user->address()->save($address);
+use App\Models\User;
+use App\Models\Post;
+
+Route::get('/create', function(){
+    $user = User::findOrFail(1);
+    $post = new Post(['title'=>'My first post with Edwin Diaz', 'body'=>'I love larvel with Edwin Diaz']);
+    $user->posts()->save($post);
 });
 ```
 
 ### Reading data
-+ update address
++ read user post
 ```php
-Route::get('/update', function(){
-  $address = Address::whereUserId(1)->first();
-  
-  $address->name = "4353 Update Av, alaska";
-  
-  $address->save();
+Route::get('/read', function(){
+    $user = User::findOrFail(1);
+    foreach($user->posts as $post){
+        echo $post->title."<br>";
+    }
+    // return $user->posts;
 });
 ```
 
 ### Updating data
-+ read address
++ update user post
 ```php
-Route::get('/read', function(){
+Route::get('/update', function(){
     $user = User::find(1);
-    echo $user->address->name;
+    $user->posts()->whereId(1)->update(['title'=>'I love laravel', 'body'=>'This is awasome, thank you Edwin Diaz']);
+    $user->posts()->where('id','=','2')->update(['title'=>'I love laravel 2', 'body'=>'This is awasome, thank you Edwin Diaz']);
 });
 ```
 
 ### Deleting data
-+ delete address
++ delete user post
 ```php
 Route::get('/delete', function(){
-    $user = User::findOrFail(1);
-    
-    $user->address()->delete();
+    $user = User::find(1);
+    $user->posts()->whereId(1)->delete();
 });
 ```
 
