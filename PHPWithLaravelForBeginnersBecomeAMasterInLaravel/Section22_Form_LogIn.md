@@ -33,22 +33,6 @@ php artisan migrate
 ```
 
 ### Login Creation Overview
-+ store function
-```php
-$input = $request->all();
-if($file = $request->file('file')){
-  $name = $file->getClientOriginalName();
-  $file->move('images', $name);
-  $input['path'] = $name;
-}
-Post::create($input);
-#att to post model
-protected $fillable = ['title', 'content', 'path'];
-```
-+ user model
-```index function
-$posts = Post::latest()->get();
-```
 
 ### Retrieving Authenticated User Data
 
