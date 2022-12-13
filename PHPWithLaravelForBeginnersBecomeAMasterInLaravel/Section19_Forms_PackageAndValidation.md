@@ -23,68 +23,94 @@ Collective\Html\HtmlServiceProvider::class,
 {{ Form::close() }}
 ```
 ### Modifying our create form with the form package
-+ posts route
++ create post
 ```php
-Route::resource('/posts', PostsController::class);
+{!! Form::open(['method'=>'POST', 'route'=>'posts.store']) !!}
+      {{csrf_field()}}
+      <div class='form-group'>
+            {!! Form::label('title', 'Title:') !!}
+            {!! Form::text('title', null, ['class'=>'form-control']) !!}
+      </div>
+      
+      <div class='form-group'>
+            {!! Form::submit('Create Post', ['class'=>'btn btn-primary']) !!}
+      </div>
+
+{{ Form::close() }}
 ```
 
 ### Modifying our edit and delete forms with the form package
 + title form
 ```php
-@extends('layouts.app')
+{!! Form::model($post, ['method'=>'PATCH', 'route'=>['posts.update', $post->id]]) !!}
+      {{csrf_field()}}
+      {!! Form::label('title', 'Title:') !!}
+      {!! Form::text('title', null, ['class'=>'form-control']) !!}
 
-@section('content')
-<from method="post" action="/posts">
-    <input type="text" name="title" placeholdeer="Enter Title">
-    {{csrf_field()}}
-    <input type="submit" name="submit">
-</form>
+      {!! Form::submit('Update Post', ['class'=>'btn btn-info']) !!}
+{{ Form::close() }}
+
+{!! Form::open(['method'=>'DELETE', 'route'=>['posts.destroy', $post->id]]) !!}
+      {{csrf_field()}}
+      {!! Form::submit('Delete Post', ['class'=>'btn btn-danger']) !!}
+{{ Form::close() }}
 ```
 
 ### Basic Validation
 ```php
-#create function
-return view('posts.create');
-
 #store function
-return $request->title;
+$this->validate($request,[
+            'title'=>'required|max:100'
+        ]);
 ```
 
 ### Displaying Errors
-+ delete post tags
++ change route
 ```php
-   Post::create($request->all());
-   
-   // $input = $request->all();
-   // $input['title'] = $request->title;
-   // Post::create($request->all());
-   
-   // $post = new Post;
-   // $post->title = $request->title;
-   // $post->save();
+   Route::group(['middleware'=>'web'], function(){
+    Route::resource('/posts', PostsController::class);
+});
+```
++ display errors
+```php
+@if(count($errors) > 0)
+        <div class="alert alert-danger">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{$error}}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 ```
 
 ### Advance Validation
-+ index view
++ make new request
+```bash
+$ php artisan make:request CreatePostRequest
+```
++ edit request content
 ```php
-@extends('layouts.app')
+public function rules()
+    {
+        return [
+            'title'=>'required|max:100'
+            //
+        ];
+    }
+```
++ edit PostsController
+```php
+use App\Http\Requests\CreatePostRequest;
 
-@section('content')
+public function store(CreatePostRequest $request) {
+      Post::create($request->all());
 
-<ul>
-    @foreach($posts as $post)
-        <li>{{$post->title}}</li>
-    @endforeach
-<ul>
-
-@stop
+      return redirect('/posts');
+}
 ```
 
 ### Creating Snippets with PhpStorm
-+ delete post tags
-```php
-<h1>{{$post->title}}</h1>
-```
 
 ### Resources
 [Validation](https://laravel.com/docs/5.2/validation)
