@@ -223,38 +223,38 @@ Route::post('/admin/posts', [App\Http\Controllers\PostController::class, 'store'
 + add create post form in create.blade.php
 ```php
 <form method="post" action="{{route('post.store')}}" enctype="multipart/form-data">
-        @csrf
-        <div class="form-group">
-            <label for="title">Title</label>
-            <input  type="text"
-                    name="title" 
-                    class="form-control" 
-                    id="title" 
-                    aria-describedby="" 
-                    placeholder="Enter Title">
-        </div>
-        <div class="form-group">
-            <label for="file">File</label>
-            <input  type="file" 
-                    name="post_image" 
-                    class="form-control" 
-                    id="post_image">
-        </div>
-        <div class="form-group">
-            <textarea   name="body" 
-                        id="body" 
-                        cols="30" 
-                        rows="10" 
-                        class="form-control"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+  @csrf
+  <div class="form-group">
+    <label for="title">Title</label>
+    <input  type="text"
+            name="title" 
+            class="form-control" 
+            id="title" 
+            aria-describedby="" 
+            placeholder="Enter Title">
+  </div>
+  <div class="form-group">
+    <label for="file">File</label>
+    <input  type="file" 
+            name="post_image" 
+            class="form-control" 
+            id="post_image">
+  </div>
+  <div class="form-group">
+    <textarea   name="body" 
+                id="body" 
+                cols="30" 
+                ows="10" 
+                class="form-control"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 ```
 + add store function in PostController
 ```php
 public function store(){
-        dd(request()->all());
-    }
+  dd(request()->all());
+}
 ```
 
 
@@ -262,15 +262,15 @@ public function store(){
 +chang store function content for validation
 ```php
 public function store(){
-        $inputs = request()->validate([
-            'title'=>'required|min:8|max:255',
-            'post_image'=>'file',
-            'body'=>'required'
-        ]);
-        if(request('post_image')){
-            $inputs['post_image'] = request('post_image')->store('images');
-        }
-    }
+  $inputs = request()->validate([
+    'title'=>'required|min:8|max:255',
+    'post_image'=>'file',
+    'body'=>'required'
+  ]);
+  if(request('post_image')){
+    $inputs['post_image'] = request('post_image')->store('images');
+  }
+}
 ```
 
 ### Creating a post from admin - Part 3
@@ -285,7 +285,7 @@ $ php artisan storage:links
 + add in store function
 ```php
 auth()->user()->posts()->create($inputs);
-        return back();
+return back();
 ```
 
 ### Displaying a post from admin - Part 1
@@ -308,25 +308,25 @@ Route::get('/admin/posts', [App\Http\Controllers\PostController::class, 'index']
 + add index functio in postcontroller
 ```php
 public function index(){
-        return view('admin.posts.index');
-    }
+  return view('admin.posts.index');
+}
 ```
 
 ### isplaying a post from admin - Part 2
 + copy data table to index
 + add script section
 ```php
-@section('scripts')
-<!-- Page level plugins -->
+  @section('scripts')
+  <!-- Page level plugins -->
   <script src="{{asset('vendor/datatables/jquery.dataTables.min.js')}}"></script>
   <script src="{{asset('vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
 
   <!-- Page level custom scripts -->
   <script src="{{asset('js/demo/datatables-demo.js')}}"></script>
-    @endsection
+  @endsection
 ```
 
-### isplaying a post from admin - Part 3
+### Displaying a post from admin - Part 3
 + modify index function
 ```php
 public function index(){
@@ -495,21 +495,55 @@ public function update(Post $post){
  ```
 
 ### Creating Authorization Policies Part 1
++ restrict user to only display posts owned by him
 ```php
-
+$posts = auth()->user()->posts;
 ```
 
 ### Creating Authorization Policies Part 2
++ create Post model policy
+```bash
+$ php artisan make:policy PostPolicy --model=Post
+```
++ restrict user to only edit posts owned by him
 ```php
-
+$this->authorize('view', $post);
+```
++ restrict user to only delete posts owned by him
+```php
+@can('view', $post)
+                        <form method="post" action="{{route('post.destroy', $post->id)}}" enctype="multiparat/form-data">
+                          @csrf
+                          @method('DELETE')
+                          <button class="btn btn-danger">Delete</button>
+                        </form>
+                        @endcan
+```
++ restrict user to only edit posts owned by him in route
+```php
+Route::get('/admin/posts/{post}/edit', [App\Http\Controllers\PostController::class, 'edit'])->middleware('can:view,post')->name('post.edit');
+```
++ check if logged in user can do rud
+```php
+return $user->id === $post->user_id;
 ```
 
 ### Creating Authorization Policies Part 3 and Refactoring
++ store method
 ```php
-
+$this->authorize('create', Post::class);
 ```
 
 ### Laravel pagination
++ pagination
 ```php
-
+<div class="d-flex">
+          <div class="mx-auto">
+            {{$posts->links()}}
+          </div>
+         </div>
+```
++ view pagination folder
+```bash
+$ php artisan vendor:publish
 ```
