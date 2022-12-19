@@ -238,17 +238,78 @@ $ php artisan make:middleware RoleMiddleware
 
 ```
 ### Admin and Model Owner Same Access
-+ 
++ add new route group
 ```php
-
+Route::middleware(['can:view, user'])->group(function(){
+    Route::get('/admin/users/{user}/profile', [App\Http\Controllers\UserController::class, 'show'])->name('user.profile.show');
+});
+```
++ create User Policy
+```bash
+$ php artisan make:policy UserPolicy --model=User
+```
++ modify view function
+```php
+public function view(User $user, User $model) {
+        return $user->userHasRole('admin') ?: $user->id == $model->id;
+}
 ```
 ### Routes for large applications
-+ 
++ create posts.php under web folder of routes
 ```php
+<?php
 
+use Illuminate\Support\Facades\Route;
+
+Route::get('/post/{post}', [App\Http\Controllers\PostController::class, 'show'])->name('post');
+
+Route::get('/posts/create', [App\Http\Controllers\PostController::class, 'create'])->name('post.create');
+Route::post('/posts', [App\Http\Controllers\PostController::class, 'store'])->name('post.store');
+Route::get('/posts', [App\Http\Controllers\PostController::class, 'index'])->name('post.index');
+Route::delete('/posts/{post}/destroy', [App\Http\Controllers\PostController::class, 'destroy'])->name('post.destroy');
+Route::patch('/posts/{post}/update', [App\Http\Controllers\PostController::class, 'update'])->name('post.update');
+Route::get('/posts/{post}/edit', [App\Http\Controllers\PostController::class, 'edit'])->name('post.edit');
+```
++ and users.php
+```php
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::put('/users/{user}/update', [App\Http\Controllers\UserController::class, 'update'])->name('user.profile.update');
+Route::delete('/users/{user}/destroy', [App\Http\Controllers\UserController::class, 'destroy'])->name('user.destroy');
+
+Route::middleware('role:ADMIN')->group(function(){
+    Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+    
+});
+
+Route::middleware(['can:view, user'])->group(function(){
+    Route::get('/users/{user}/profile', [App\Http\Controllers\UserController::class, 'show'])->name('user.profile.show');
+});
+```
++ add inside boot() in RouteServiceProvider.php
+```php
+Route::middleware('admin')
+                ->middleware('web')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/web/posts.php'));
+
+            Route::middleware('admin')
+                ->middleware('web')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/web/users.php'));
 ```
 ### Component nesting
-+ 
++ create admin and home folder under components
++ create sidebar and top-nav folder under admin
++ move sidebar files under sidebar folder
++ move top-nav files under top-nav folder
++ revised admin.master.blade.php
 ```php
+<x-admin.sidebar.admin-sidebar-posts-links> </x-admin.sidebar.admin-sidebar-posts-links>
 
+<x-admin.sidebar.admin-sidebar-users-link></x-admin.sidebar.admin-sidebar-users-link>
+
+<x-admin.top-nav.admin-top-navbar-user-information></x-admin.top-nav.admin-top-navbar-user-information>
 ```
